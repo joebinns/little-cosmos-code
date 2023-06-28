@@ -52,27 +52,27 @@ public:
 	FInputBindingHandle* MoveTriggeredBinding;
 	FInputBindingHandle* MoveCompletedBinding;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void BindMoveInput();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UnbindMoveInput();
 
 	FInputBindingHandle* JumpStartedBinding;
 	FInputBindingHandle* JumpCompletedBinding;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void BindJumpInput();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UnbindJumpInput();
 
 	FInputBindingHandle* LookTriggeredBinding;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void BindLookInput();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UnbindLookInput();
     	
-    	UFUNCTION()
+    	UFUNCTION(BlueprintCallable)
     	void BindPauseInput();
 
 #pragma endregion 
