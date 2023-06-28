@@ -72,8 +72,8 @@ public:
 	UFUNCTION()
 	void UnbindLookInput();
     	
-    UFUNCTION()
-    void BindPauseInput();
+    	UFUNCTION()
+    	void BindPauseInput();
 
 #pragma endregion 
 	
@@ -87,12 +87,17 @@ protected:
 
 #pragma region INPUT
 
-	UFUNCTION()
-	void UpdateInputAxes();
-	
 	FVector Forward;
 	FVector Up;
 	FVector Right;
+
+	// Bindings	
+	UPROPERTY()
+	bool IsMoveBound;
+	UPROPERTY()
+	bool IsJumpBound;
+	UPROPERTY()
+	bool IsLookBound;
 	
 	// Input Actions
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Controls|Input Actions")
@@ -105,7 +110,7 @@ protected:
 	UInputAction* LookAction;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Controls|Input Actions")
-    UInputAction* PauseAction;
+    	UInputAction* PauseAction;
 
 	// Input Mappings
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Controls|Input Mappings")
@@ -127,6 +132,9 @@ protected:
 
 	UFUNCTION()
 	void SetMovementInputDirection(FVector Direction);
+
+	UFUNCTION()
+	void UpdateInputAxes();
 
 #pragma endregion
 
@@ -161,8 +169,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category="Camera|Custom Lag")
 	float CameraRotationLagSpeed = 4.f;
-
-	
 
 #pragma endregion
 
