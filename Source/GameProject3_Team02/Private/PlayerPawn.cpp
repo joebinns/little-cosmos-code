@@ -138,20 +138,32 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if (PlayerEnhancedInputComponent == nullptr)
 		return;
 
+	// TODO: Fix removing bindings, so that this can be done dynamically in the BindInput methods
+	if (MoveAction)
+		MoveTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerPawn::Move);
+		MoveCompletedBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelMove);
+	if (JumpAction)
+		JumpStartedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerPawn::Jump);
+		JumpCompletedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelJump);
+	if (LookAction)
+		LookTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerPawn::Look);
+
 	BindMoveInput();
 	BindJumpInput();
 	BindLookInput();
 	BindPauseInput();
 }
 
+// TODO: Fix RemoveBinding() usage
 #pragma region INPUT_BINDINGS
 void APlayerPawn::BindMoveInput()
 {
 	if (!MoveAction)
 		return;
 	
-	MoveTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerPawn::Move);
-	MoveCompletedBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelMove);
+	//MoveTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerPawn::Move);
+	//MoveCompletedBinding = &PlayerEnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelMove);
+	IsMoveBound = true;
 
 	UE_LOG(LogTemp, Warning, TEXT("Move input binded"));
 	
@@ -162,8 +174,10 @@ void APlayerPawn::UnbindMoveInput()
 	if (!MoveAction)
 		return;
 	
-	PlayerEnhancedInputComponent->RemoveBinding(*MoveTriggeredBinding);
-	PlayerEnhancedInputComponent->RemoveBinding(*MoveCompletedBinding);
+	//PlayerEnhancedInputComponent->RemoveBinding(*MoveTriggeredBinding);
+	//PlayerEnhancedInputComponent->RemoveBinding(*MoveCompletedBinding);
+	IsMoveBound = false;
+	
 	SetMovementInputDirection(FVector(0.f, 0.f, 0.f));
 
 	UE_LOG(LogTemp, Warning, TEXT("Move input unbinded"));
@@ -173,9 +187,10 @@ void APlayerPawn::BindJumpInput()
 {
 	if (!JumpAction)
 		return;
-	
-	JumpStartedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerPawn::Jump);
-	JumpCompletedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelJump);
+
+	//JumpStartedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APlayerPawn::Jump);
+	//JumpCompletedBinding = &PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APlayerPawn::CancelJump);
+	IsJumpBound = true;
 
 	UE_LOG(LogTemp, Warning, TEXT("Jump input binded"));
 }
@@ -185,8 +200,10 @@ void APlayerPawn::UnbindJumpInput()
 	if (!JumpAction)
 		return;
 
-	PlayerEnhancedInputComponent->RemoveBinding(*JumpStartedBinding);
-	PlayerEnhancedInputComponent->RemoveBinding(*JumpCompletedBinding);
+	//PlayerEnhancedInputComponent->RemoveBinding(*JumpStartedBinding);
+	//PlayerEnhancedInputComponent->RemoveBinding(*JumpCompletedBinding);
+	IsJumpBound = false;
+	
 	PhysicsActor->SetJumpState(EJumpState::JE_None);
 
 	UE_LOG(LogTemp, Warning, TEXT("Jump input unbinded"));
@@ -197,7 +214,10 @@ void APlayerPawn::BindLookInput()
 	if (!LookAction)
 		return;
 
-	LookTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerPawn::Look);
+	//LookTriggeredBinding = &PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerPawn::Look);
+	IsLookBound = true;
+
+	UE_LOG(LogTemp, Warning, TEXT("Look input binded"));
 }
 
 void APlayerPawn::UnbindLookInput()
@@ -205,13 +225,16 @@ void APlayerPawn::UnbindLookInput()
 	if (!LookAction)
 		return;
 
-	PlayerEnhancedInputComponent->RemoveBinding(*LookTriggeredBinding);
+	//PlayerEnhancedInputComponent->RemoveBinding(*LookTriggeredBinding);
+	IsLookBound = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("Look input unbinded"));
 }
 
 void APlayerPawn::BindPauseInput()
 {
-if(!PauseAction)
-	return;
+	if(!PauseAction)
+		return;
 
 	PlayerEnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &APlayerPawn::Pause);
 }
@@ -239,11 +262,17 @@ void APlayerPawn::PawnClientRestart()
 
 void APlayerPawn::Move(const FInputActionValue& Value)
 {
+	if (!IsMoveBound)
+		return;
+	
 	SetMovementInputDirection(Value.Get<FVector>().GetSafeNormal());
 }
 
 void APlayerPawn::CancelMove(const FInputActionValue& Value)
 {
+	if (!IsMoveBound)
+		return;
+	
 	SetMovementInputDirection(FVector(0.f, 0.f, 0.f));
 }
 
@@ -264,16 +293,25 @@ void APlayerPawn::SetMovementInputDirection(FVector Input)
 
 void APlayerPawn::Jump(const FInputActionValue& Value)
 {
+	if (!IsJumpBound)
+		return;
+	
 	PhysicsActor->QueueJump();
 }
 
 void APlayerPawn::CancelJump(const FInputActionValue& Value)
 {
+	if (!IsJumpBound)
+		return;
+	
 	PhysicsActor->AttemptStunt();
 }
 
 void APlayerPawn::Look(const FInputActionValue& Value)
 {
+	if (!IsLookBound)
+		return;
+	
 	FVector2D Look = Value.Get<FVector2D>();
 	if (Look != FVector2D::ZeroVector)
 	{
@@ -300,6 +338,9 @@ void APlayerPawn::Look(const FInputActionValue& Value)
 
 void APlayerPawn::Pause(const FInputActionValue& Value)
 {
+	if (UIHandler == nullptr)
+		return;
+	
 	UIHandler->TogglePause();
 }
 
